@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Puzzle</title>
+</head>
+<body>
+    <div class="main-div">
+        <div class="holder">
+            <div class="infoNum">
+                <span id='spnNumMoves'>10 </span> <span>Moves Left</span>
+            </div>
+            <div class="game-screen">
+                <div class="game-screen-holder">
+                    <div id="div1" class="b-game">1</div>
+                    <div id="div2" class="b-game">2</div>
+                    <div id="div3" class="b-game">3</div>
+                    <div id="div4" class="b-game">4</div>
+                    <div id="div5" class="b-game">5</div>
+                    <div id="div6" class="b-game">6</div>
+                    <div id="div7" class="b-game">7</div>
+                    <div id="div8" class="b-game">8</div>
+                    <div id="div9" class="b-game">9</div>
+                    <div id="div10" class="b-game">10</div>
+                    <div id="div11" class="b-game">11</div>
+                    <div id="div12" class="b-game">12</div>
+                    <div id="div13" class="b-game">13</div>
+                    <div id="div14" class="b-game">14</div>
+                    <div id="div15" class="b-game">15</div>
+                    <div id="div16" class="b-game">16</div>
+                    <div id="div17" class="b-game">17</div>
+                    <div id="div18" class="b-game">18</div>
+                    <div id="div19" class="b-game">19</div>
+                    <div id="div20" class="b-game">20</div>
+                    <div id="div21" class="b-game">21</div>
+                    <div id="div22" class="b-game">22</div>
+                    <div id="div23" class="b-game">23</div>
+                    <div id="div24" class="b-game">24</div>
+                    <div id="div25" class="b-game">25</div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="btnReload">🔃</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    function getDivPositionById(id) {
+        const div = document.getElementById(id);
+
+        if (div) {
+            const divIndex = Array.from(div.parentNode.children).indexOf(div);
+            const divcol = divIndex % 5 + 1;
+            const divrow = Math.floor(divIndex / 5) + 1;
+
+            return {
+                divcol,
+                divrow
+            };
+        } else {
+            return null;
+        }
+    }
+
+    function getNeighborDivs(id) {
+        const divPositions = {
+            divId: id,
+            up: null,
+            left: null,
+            down: null,
+            right: null
+        };
+
+        const div = document.getElementById(id);
+
+        if (div) {
+            const divIndex = Array.from(div.parentNode.children).indexOf(div);
+            const divCol = divIndex % 5 + 1;
+            const divRow = Math.floor(divIndex / 5) + 1;
+
+            if (divRow > 1) {
+                const upIndex = divIndex - 5;
+                const upDiv = div.parentNode.children[upIndex];
+                divPositions.up = upDiv.id;
+            }
+
+            if (divCol > 1) {
+                const leftIndex = divIndex - 1;
+                const leftDiv = div.parentNode.children[leftIndex];
+                divPositions.left = leftDiv.id;
+            }
+
+            if (divRow < 5) {
+                const downIndex = divIndex + 5;
+                const downDiv = div.parentNode.children[downIndex];
+                divPositions.down = downDiv.id;
+            }
+
+            if (divCol < 5) {
+                const rightIndex = divIndex + 1;
+                const rightDiv = div.parentNode.children[rightIndex];
+                divPositions.right = rightDiv.id;
+            }
+        }
+
+        return divPositions;
+    }
+
+    function changeDivPosition(divId, direction) {
+        const div = document.getElementById(divId);
+        const divPosition = getDivPositionById(divId);
+
+        if (div && divPosition) {
+            let newDivId = null;
+
+            switch (direction) {
+                case 'up':
+                    newDivId = getNeighborDivs(divId).up;
+                    break;
+                case 'down':
+                    newDivId = getNeighborDivs(divId).down;
+                    break;
+                case 'left':
+                    newDivId = getNeighborDivs(divId).left;
+                    break;
+                case 'right':
+                    newDivId = getNeighborDivs(divId).right;
+                    break;
+                default:
+                    console.log('Invalid Direction.');
+                    return;
+            }
+
+            if (newDivId) {
+                const newDiv = document.getElementById(newDivId);
+                const tempHTML = div.innerHTML;
+
+                div.innerHTML = newDiv.innerHTML;
+                newDiv.innerHTML = tempHTML;
+
+                let divProps = getElementProperties(div);
+                let newDivPros = getElementProperties(newDiv);
+
+                setElementProperties(div, newDivPros);
+                setElementProperties(newDiv, divProps);
+
+            } else {
+                console.log('Dont have a neighbor div on this direction : ' + direction);
+            }
+        } else {
+            console.log('this div dont exists.');
+        }
+    }
+
+    function loadColorsIntoBlocks(arrayColors) {
+        let blockcs = document.getElementsByClassName('b-game');
+        let i = 0;
+        for (let block of blockcs) {
+            block.style.backgroundColor = arrayColors[i];
+            i++;
+        }
+    }
+
+    function getElementProperties(element) {
+        const properties = {};
+
+        const attributes = element.attributes;
+        for (const attribute of attributes) {
+            const attributeName = attribute.name;
+            const attributeValue = attribute.value;
+            properties[attributeName] = attributeValue;
+        }
+
+        return properties;
+    }
+
+    function setElementProperties(element, properties) {
+        for (let propertyName in properties) {
+            element.setAttribute(propertyName, properties[propertyName]);
+        }
+    }
+
+    function setBlockAsNull(divId) {
+        const div = document.getElementById(divId);
+        div.style.backgroundColor = 'black';
+        div.style.border = 'none';
+        // div.style.color = 'white';
+        div.textContent = '';
+
+        console.log('divNull', divId);
+    }
+
+    let colorsStage1 = ['aqua', 'white', 'purple', 'aqua', 'yellow', 'aqua', 'purple', 'yellow', 'yellow', 'white',
+        'purple',
+        'yellow', 'aqua', 'white', 'purple', 'yellow', 'aqua', 'aqua', 'yellow', 'aqua', 'yellow', 'yellow',
+        'white', 'white',
+        'yellow'
+    ];
+
+    let colorsStage2 = ['yellow', 'aqua', 'yelllow', 'yellow', 'aqua', 'yellow', 'purple', 'purple', 'purple', 'yellow',
+        'white', 'yellow', 'aqua', 'white', 'purple', 'aqua', 'aqua', 'yellow', 'purple', 'yellow', 'white',
+        'yellow', 'aqua',
+        'purple', 'yellow'
+    ];
+
+    function addClickBlockControl() {
+        let blockcs = document.getElementsByClassName('b-game');
+        let i = 0;
+        for (let block of blockcs) {
+            block.addEventListener('click', blockClick)
+            i++;
+        }
+    }
+
+    function compareNeighborHoodColors(block1, block2) {
+        let b1 = document.getElementById(block1);
+        let b2 = document.getElementById(block2);
+
+        if (b1 == null || b2 == null) {
+            return false;
+        }
+
+        return window.getComputedStyle(b1).backgroundColor == window.getComputedStyle(b2).backgroundColor;
+    }
+
+    function upBlockAndRemove(divId) {
+        for (let i = 0; i < 4; i++) {
+            changeDivPosition(divId, 'up');
+        }
+
+        setBlockAsNull(divId);
+    }
+
+    function recursiveBlockActions(blocksNeighbors, arrayCheckedItens) {
+        console.log(blocksNeighbors);
+
+        arrayCheckedItens.push(blocksNeighbors.divId);
+        let resolutionNeighborhood = {};
+        resolutionNeighborhood.up = compareNeighborHoodColors(blocksNeighbors.divId, blocksNeighbors.up);
+        resolutionNeighborhood.left = compareNeighborHoodColors(blocksNeighbors.divId, blocksNeighbors.left);
+        resolutionNeighborhood.down = compareNeighborHoodColors(blocksNeighbors.divId, blocksNeighbors.down);
+        resolutionNeighborhood.right = compareNeighborHoodColors(blocksNeighbors.divId, blocksNeighbors.right);
+
+        console.log(resolutionNeighborhood);
+        if (resolutionNeighborhood.up && !arrayCheckedItens.includes(blocksNeighbors.up)) {
+            arrayCheckedItens.push(blocksNeighbors.up);
+            recursiveBlockActions(getNeighborDivs(blocksNeighbors.up), arrayCheckedItens);
+        } else {
+            upBlockAndRemove(blocksNeighbors.divId);
+        }
+
+        if (resolutionNeighborhood.left && !arrayCheckedItens.includes(blocksNeighbors.left)) {
+            arrayCheckedItens.push(blocksNeighbors.left);
+            recursiveBlockActions(getNeighborDivs(blocksNeighbors.left), arrayCheckedItens);
+        } else {
+            upBlockAndRemove(blocksNeighbors.divId);
+        }
+
+        if (resolutionNeighborhood.down && !arrayCheckedItens.includes(blocksNeighbors.down)) {
+            arrayCheckedItens.push(blocksNeighbors.down);
+            recursiveBlockActions(getNeighborDivs(blocksNeighbors.down), arrayCheckedItens);
+        } else {
+            upBlockAndRemove(blocksNeighbors.divId);
+        }
+
+        if (resolutionNeighborhood.right && !arrayCheckedItens.includes(blocksNeighbors.right)) {
+            arrayCheckedItens.push(blocksNeighbors.right);
+            recursiveBlockActions(getNeighborDivs(blocksNeighbors.right), arrayCheckedItens);
+        } else {
+            upBlockAndRemove(blocksNeighbors.divId);
+        }
+
+        console.log('added', arrayCheckedItens);
+
+    }
+
+    function blockClick(e) {
+        let divId = e.target.id;
+
+        if (getDivPositionById(divId).divrow != 5) {
+            return false;
+        }
+
+        if (window.getComputedStyle(e.target).backgroundColor == 'rgb(0, 0, 0)') {
+            return false;
+        }
+
+        let numClicks = sessionStorage.getItem('totalClicks') ?? 0;
+
+        if (+numClicks < 10) {
+            sessionStorage.setItem('totalClicks', +numClicks + 1);
+            document.getElementById('spnNumMoves').textContent = (10 - (+numClicks + 1));
+        }
+
+        if (+numClicks >= 10) {
+            alert('You Lose !')
+            return false;
+        }
+
+        let itensChecked = [];
+
+        let neighbors = getNeighborDivs(divId);
+
+        recursiveBlockActions(neighbors, itensChecked);
+
+        if (checkGameComplete()) {
+            alert('Puzzle Solved !');
+            return false;
+        }
+
+        console.log(divId);
+        console.log(neighbors);
+        console.log(numClicks);
+
+    }
+
+    function enableReload() {
+        if (document.getElementById('btnReload')) {
+            document.getElementById('btnReload').addEventListener('click', () => {
+                window.location.reload();
+            });
+        }
+    }
+
+    function checkGameComplete() {
+        for (let item of document.getElementsByClassName('b-game')) {
+            if (window.getComputedStyle(item).backgroundColor != 'rgb(0, 0, 0)') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function initRunGame() {
+        loadColorsIntoBlocks(colorsStage1);
+        addClickBlockControl();
+        enableReload();
+
+        sessionStorage.setItem('totalClicks', +0);
+    }
+    window.addEventListener('DOMContendLoaded', initRunGame());
+</script>
+<style>
+    body {
+        margin: 0;
+    }
+
+    .main-div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+    }
+
+    .holder {
+        width: 100%;
+        height: 100%;
+        display: inline-block;
+        justify-content: center;
+        align-items: center;
+        /* grid-template-columns: repeat(1, 1fr);
+            grid-template-rows: repeat(1, 1fr); */
+    }
+
+    .game-screen {
+        width: 80%;
+        height: 80%;
+        /* background-color: white; */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .game-screen-holder {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 1px;
+        /* width: 90%;
+            height: 90%; */
+
+    }
+
+    .game-screen-holder div {
+        /* background-color: gray; */
+        border: 1px solid purple;
+    }
+
+    .b-game {
+        width: 50px;
+        height: 50px;
+        border-radius: 10%;
+        padding: 10px;
+        margin: 8px;
+        background-color: gray;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .controls {
+        width: 80%;
+        /* background-color: red; */
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .infoNum {
+        width: 80%;
+        /* background-color: red; */
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+    }
+
+    .bottom-div {
+        width: 100%;
+        display: inline-block;
+    }
+</style>
